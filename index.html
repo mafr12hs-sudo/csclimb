@@ -3094,19 +3094,8 @@ Score honestly. 8+ only for responses that genuinely de-escalate, take appropria
   const userPrompt = `SCENARIO: ${battle.title}\n${battle.brief}\n\nTASK: ${battle.task}\n\nCANDIDATE'S RESPONSE:\n${text}`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
-      })
-    });
-    const data = await response.json();
-    const raw = data.content?.[0]?.text || '';
-    const fb = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const raw = await callClaude([{ role: 'user', content: userPrompt }], systemPrompt);
+const fb = JSON.parse(raw.replace(/```json|```/g, '').trim());
     const score = parseInt(fb.score) || 0;
     const scoreClass = score >= 8 ? 'high' : score >= 5 ? 'mid' : 'low';
 
@@ -3298,19 +3287,8 @@ Score honestly relative to what a real international CS hiring bar expects. Cons
   const userPrompt = `QUESTION: ${question}\n\nCANDIDATE'S ANSWER:\n${text}\n\nPREVIOUS MONTHS (for context on growth trajectory):\n${prevScores}`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
-      })
-    });
-    const data = await response.json();
-    const raw = data.content?.[0]?.text || '';
-    const fb = JSON.parse(raw.replace(/```json|```/g, '').trim());
+   const raw = await callClaude([{ role: 'user', content: userPrompt }], systemPrompt);
+const fb = JSON.parse(raw.replace(/```json|```/g, '').trim());
     const score = parseInt(fb.score) || 0;
 
     if (!STATE.monthlyInterviews) STATE.monthlyInterviews = { history: [] };
@@ -3944,25 +3922,13 @@ ${text}
 Evaluate the depth of the student's reflection and whether it shows genuine insight into how this skill applies to their CS career transition.`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
-      })
-    });
-
-    const data = await response.json();
-    const raw = data.content?.[0]?.text || '';
-    let fb;
-    try {
-      fb = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    } catch(e) {
-      throw new Error('Could not parse AI response.');
-    }
+    const raw = await callClaude([{ role: 'user', content: userPrompt }], systemPrompt);
+let fb;
+try {
+  fb = JSON.parse(raw.replace(/```json|```/g, '').trim());
+} catch(e) {
+  throw new Error('Could not parse AI response.');
+}
 
     const score = parseInt(fb.score) || 0;
     const scoreClass = score >= 8 ? 'high' : score >= 5 ? 'mid' : 'low';
